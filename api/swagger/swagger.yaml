@@ -18,17 +18,23 @@ consumes:
 produces:
   - application/json
 paths:
-  /hello:
+  /users:
     # binds a127 app logic to a route
-    x-swagger-router-controller: hello_world
+    x-swagger-router-controller: users
     get:
-      description: Returns 'Hello' to the caller
-      # used as the method name of the controller
-      operationId: hello
+      description: Returns all users to the caller
+      x-swagger-serializer: users
+      # used as the method name of the controller and serializer
+      operationId: usersGet
       parameters:
         - name: name
           in: query
-          description: The name of the person to whom to say hello
+          description: User name to get
+          required: false
+          type: string
+        - name: email
+          in: query
+          description: User email to get
           required: false
           type: string
       responses:
@@ -36,22 +42,48 @@ paths:
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/HelloWorldResponse"
+            type: array
+            items:
+              $ref: "#/definitions/User"
         # responses may fall through to errors
         default:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+    post:
+      description: Create a user
+      x-swagger-deserializer: users
+      operationId: usersPost
+      parameters:
+        - name: user
+          in: body
+          description: Properties of new user
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        "201":
+          description: User created   
+          schema:
+            type: object
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse" 
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
 definitions:
-  HelloWorldResponse:
-    required:
-      - message
+  User:
+    type: object
     properties:
-      message:
+      name:
         type: string
+      email:
+        type: string
+    required:
+      - name
+      - email
   ErrorResponse:
     required:
       - message
